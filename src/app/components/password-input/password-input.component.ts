@@ -1,40 +1,26 @@
 import { Component } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+import { PasswordStrengthService } from '../../services/password-strength.service';
 
 @Component({
-  selector: 'app-password-strength',
-  templateUrl: './password-strength.component.html',
-  styleUrls: ['./password-strength.component.scss'],
+  selector: 'app-password-input',
+  templateUrl: './password-input.component.html',
+  styleUrls: ['./password-input.component.scss'],
 })
-export class PasswordStrengthComponent {
-  password = '';
+export class PasswordInputComponent {
+  passwordForm: FormGroup;
   strength = 0;
 
-  onPasswordChange() {
-    const hasLetters = /[a-zA-Z]/.test(this.password); //only eng alphabet
-    const hasDigits = /\d/.test(this.password);
-    const hasSymbols = /\W/.test(this.password);
+  constructor(private passwordStrengthService: PasswordStrengthService) {
+    this.passwordForm = new FormGroup({
+      password: new FormControl(''),
+    });
 
-    if (this.password.length === 0) {
-      this.strength = -1;
-    } else if (this.password.length < 8) {
-      this.strength = 0;
-    } else if (
-      (hasLetters && !hasDigits && !hasSymbols) ||
-      (!hasLetters && hasDigits && !hasSymbols) ||
-      (!hasLetters && !hasDigits && hasSymbols)
-    ) {
-      this.strength = 1;
-    } else if (
-      (hasLetters && hasDigits && !hasSymbols) ||
-      (hasLetters && !hasDigits && hasSymbols) ||
-      (!hasLetters && hasDigits && hasSymbols)
-    ) {
-      this.strength = 2;
-    } else if (hasLetters && hasDigits && hasSymbols) {
-      this.strength = 3;
-    }
-
-    this.updateStrengthBarColors();
+    this.passwordForm.get('password')?.valueChanges.subscribe((value) => {
+      this.strength =
+        this.passwordStrengthService.calculatePasswordStrength(value);
+      this.updateStrengthBarColors();
+    });
   }
 
   updateStrengthBarColors() {
